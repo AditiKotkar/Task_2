@@ -2,51 +2,42 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = 3000;
+const port = 3000;
 
-// In-memory user data 
+// data
 const users = [
-  { id: 1, name:'user1', rollNumber: '101', password: 'password1', isAuthenticated: false },
-  { id: 2, name:'user2', rollNumber: '102', password: 'password2', isAuthenticated: false },
+  { name:'user1', rollNo: '001', password: 'pass123' },
+  { name:'user1', rollNo: '002', password: 'pass456' },
+  // Add more data
 ];
 
 // JSON in request body
 app.use(bodyParser.json());
 
-// validate user authentication status
-const authenticateUser = (req, res, next) => {
-  const userId = req.params.id;
-  const user = users.find(u => u.id == userId);
+// API endpoint to get data roll number
+app.get('/api/users/:rollNo', (req, res) => {
+  const rollNo = req.params.rollNo;
+  const users = users.find(u => u.rollNo === rollNo);
 
-  if (!user || !user.isAuthenticated) {
-    return res.status(403).json({ error: 'Unauthorized access' });
+  if (users) {
+    res.json(users);
+  } else {
+    res.status(404).json({ error: 'Student not found' });
   }
-
-  next();
-};
-
-// API endpoint to validate user ID and control access
-app.get('/api/users/:id', authenticateUser, (req, res) => {
-  const userId = req.params.id;
-  res.json({ message: `User ID ${userId} has access` });
 });
 
-// API endpoint to verify roll number and password
-app.get('/api/login', (req, res) => {
-  const { rollNumber, password } = req.body;
-  const user = users.find(u => u.rollNumber === rollNumber && u.password === password);
+// API endpoint to verify users credentials
+app.post('/api/verify', (req, res) => {
+  const { rollNo, password } = req.body;
+  const users = users.find(s => u.rollNo === rollNo && u.password === password);
 
-  if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+  if (users) {
+    res.json({ message: 'Credentials are correct' });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
   }
-
-  // Set user authentication status to true
-  user.isAuthenticated = true;
-  
-  res.json({ message: 'Login successful' });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
